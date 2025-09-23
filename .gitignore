@@ -1,0 +1,10 @@
+lifetime.*
+!lifetime.tex
+polyds.svg
+qpe-ds.aux
+qpe-ds.bbl
+qpe-ds.log
+.gitignore
+qpe-ds.blg
+qpe-ds.thm
+qpe-ds.synctex.gz

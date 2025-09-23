@@ -5,8 +5,14 @@
 %\usepackage{mathtools}
 \DeclarePairedDelimiter\ceil{\lceil}{\rceil}
 \DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
-\DeclarePairedDelimiter{\abs}{\lvert}{\rvert}
+%\DeclarePairedDelimiter{\abs}{\lvert}{\rvert}
 
-%\usepackage{framed}
-%\usepackage[framed]{ntheorem}
-\newframedtheorem{frm-thm}{Theorem}
+%\usepackage[amsthm, framed]{ntheorem}
+\newtheorem{theorem}{Theorem}
+\newtheorem{definition}{Definition}
+\newtheorem{proposition}{Proposition}
+\newtheorem{insight}{Insight}
+\newtheorem*{problem*}{Problem}
+
+% Complexity theory
+\newcommand\bigO[1]{\mathcal{O}(#1)}
