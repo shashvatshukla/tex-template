@@ -1,28 +1,84 @@
 \documentclass[12pt, a4paper]{article}
-\title{Explaining the quantum algorithm for phase estimation using data structures}
+\title{Explaining quantum phase estimation using data structures}
 %\date{January 1, 2020}
 \author{Shashvat Shukla}
-
-
 \input{packages.tex}
-
 \input{macros.tex}
-
 
 \begin{document}
 	
-	\maketitle
+\maketitle
 	
-	\begin{abstract}
-		The phase estimation algorithm is an algorithm for quantum computers that will be useful in physical simulation tasks and as a subroutine in Shor's quantum algorithm for prime factorisation. 
-		Most textbook presentations of the phase estimation algorithm are driven by algebraic manipulation and prioritise details of how the quantum circuit acts while obscuring the algorithmic ideas.
-		This paper explains the phase estimation algorithm in a new way, using elementary polynomial data structures from computer science as helpful high-level concepts. 
-		Once the polynomial data structure concepts have been understood, the explanation of phase estimation can be stated in just a few lines.
-				%This explanation involves two elementary data structures for storing polynomials: the \textit{coefficient} and \textit{point-value} representations. The quantum circuit for Fourier transform is motivated entirely from these two data structures as the efficient operation that converts between them.  . 
-		%Our explanation of QPE uses high-level concepts and has minimal reliance on algebraic derivation. Once the polynomial data structure concepts have been understood, the explanation of QPE can be stated in just a few lines. As quantum information science continues to grow in popularity, we hope that this explanation will give educators an option for presenting higher level algorithm idea first, and leaving the algebraic manipulation to later or as an exercise.
-	\end{abstract}
+\begin{abstract}
+	The quantum phase estimation algorithm is an important technique that is applied in physical simulation and prime factorisation on quantum computers. 
+	Most existing presentations of quantum phase estimation use an algebraic manipulation to show that the quantum circuit for phase estimation correctly performs what it is supposed to. However this can obscure the overarching algorithmic idea.
+	This paper explains the phase estimation algorithm in a new way, using elementary polynomial data structures from computer science as helpful high-level concepts. 
+	Once the polynomial data structure concepts have been understood, the explanation of quantum phase estimation can be stated in just a few lines.
+	We hope this explanation will provide instructors with an alternative as quantum computing grows in popularity.
+\end{abstract}
 
-	\section{Introduction}
+\section{Introduction}
+
+% What are the goals of the introduction? 
+% Demonstrate usefulness, interestingness, accessibility, novelty and broad appeal
+% also: connection to data structures and algorithms
+
+%A paper's introductory section must provide the background and context that a typical physicist, regardless of area of specialization, would need in order to understand the paper's purpose and importance. That is, it should motivate the paper, in a way that is both informative and inviting. Unlike the abstract, the introduction need not summarize the entire paper or state its main results. Often, however, the introduction ends with a paragraph that outlines how the rest of the paper is organized; this is especially useful for longer papers.
+	
+% quantum computing, quantum algorithms, quantum phase estimation
+Quantum computers promise new ways of solving problems that are intractable on classical computers. Their power comes from quantum bits (qubits), which, unlike classical bits, can exploit superposition, interference, and entanglement to store and process information more efficiently. Among the most important algorithms that harness this power is quantum phase estimation, a cornerstone of both algorithms for the simulation of physical systems and Shor’s factoring algorithm.
+
+% the problem we solve, how we solve it. accessibility, interestingness and connection to other fields. 
+Most existing presentations of phase estimation are mathematically detailed. They generally present the quantum circuit for the algorithm and present an analysis of the correctness of the algorithm by means of algebraic manipulation. While rigorous, they often obscure the underlying ideas and can be unwieldy in settings where a quick, clear explanation is all that is needed. The usefulness of this paper is in providing an alternative explanation: by framing phase estimation in terms of high level algorithmic concepts, we show how elementary data structures for representing and multiplying polynomials efficiently and a divide-and-conquer approach can help explain at a high level what the quantum phase estimation algorithm is doing. 
+
+% why it has broad appeal
+As quantum computing is a growing scientific area and industry in its own right, and as more branches of physics incorporate quantum computational methods, an ever-larger community of physicists will need at least a working understanding of phase estimation. With the rapid growth of undergraduate programs in quantum computing, it is no longer just quantum information theorists who encounter this algorithm; many instructors across physics will find themselves teaching or applying it. A clear, adaptable account is therefore of broad and growing value, both for students entering the field and for physicists in other areas who will increasingly meet quantum computing in their research.
+	
+\section{Polynomial data structures and the quantum Fourier transform}
+
+
+This section introduces the key data structure concepts that we use in our explanation of quantum phase estimation. Figure \ref{fig:polyds} shows these concepts and how they are related in one graphic. Once the concepts in this section have been understood, then QPE can be explained conceptually and with very little algebraic manipulation as we do in the next subsection.
+	
+
+	\subsection{Polynomial data structure concepts}	
+	
+	The material in this section can be motivated by asking students to consider how polynomials might be represented in a classical computer. 
+
+	The straightforward appraoch, the \underline{coefficient representation of a polynomial} \cite{cormen2009algorithms_ch30} is a vector (or list or array) containing all its coefficients. For example $p(x) = a_{N-1}x^{N-1} + ... + a_0$ is represented as $a = [a_0 ... a_{N-1}]$. 
+	
+	The \underline{point-value representation of a polynomial} \cite{cormen2009algorithms_ch30} is motivated by the fact that a polynomial ($p$ with degree less than $N$) is uniquely determined by a set of $N$ points $\{(x_0,p(x_0)), ..., (x_{N-1},p(x_{N-1}))\}$. For example, with two points, we represent the unique line that passes through those points. If we fix the inputs $\{x_0, ..., x_{N-1}\}$ at which we will evaluate the polynomial, then we can just store the values $[p(x_0)...p(x_{N-1})]$ as a vector. We can choose any set of $N$ input values.
+	
+	
+	For our purposes we will choose the N-th roots of unity $\{1,\omega_N, ..., \omega_N^{N-1}\}$ as our set of inputs and store $[p(1)...p(\omega_N^{N-1})]$. This choice makes it efficient to convert between the coefficient and point-value representations. 
+	
+
+	Consider how we can convert from the coefficient representation to the point value representation. We have to evaluate the polynomial at each of the $N$ inputs. Converting $[1,\omega_N, ..., \omega_N^{N-1}]$ to  $[p(1),...,p(\omega_N^{N-1})]$ requires the following transformation:
+	
+	$$p(\omega_N^l) = \sum_{j=0}^{N-1} a_j \omega_N^{jl} = \sum_{j=0}^{N-1} a_j e^{i2\pi jl/N},$$
+	
+	which is exactly the Discrete Fourier Transform. 
+	
+	%We illustrate this in Figure \ref{fig:dft}.
+	
+	\subsection{Quantum Encoding of polynomial data structures}
+	
+	The \underline{amplitude encoding of a vector} is the quantum state obtained from normalising the components of a vector and putting them into amplitudes of a quantum state, for example as: $v= [v_0 ... v_{N-1}] \rightarrow \frac{1}{\norm{v}} \sum_{i=0}^{N-1} v_i \ket{i}$.
+	
+	When normalised by a $\frac{1}{\sqrt{N}}$ factor, the Discrete Fourier Transform is a unitary matrix. If we implement this matrix as a quantum circuit, it converts from the \textit{amplitude encoding} of the coefficient representation to the \textit{amplitude encoding} of the point-value representation. This circuit is called the Quantum Fourier Transform and it can be implemented efficiently due to a divide-and-conquer algorithm. The details of this are interesting but not essential for a first understanding of QPE, so we discuss it in the next section.
+	
+	The final step of QPE involves the \textit{amplitude encoding} of the coefficient representation of a polynomial so $p(x) = a_{N-1}x^{N-1} + ... + a_0$ is stored as $\frac{1}{\norm{a}} \sum_{i=0}^{N-1} a_i \ket{i}$. Since the polynomial in question turns out to be a single term polynomial $x^k$, the amplitude encoding of it is just $\ket{k}$. 
+	
+	The second step of the QPE algorithm performs an inverse-QFT to convert from the amplitude encoding of the point-value representation to the amplitude encoding of the coefficient representation.
+	
+		\begin{figure}
+		\centering
+		\title{\textbf{\underline{Polynomial Data Structures}}}
+		
+		\vspace{5mm}
+		\includegraphics[width=\linewidth]{polyds.png}
+		\caption{This figure depicts the two polynomial data structures and their quantum analogues which are used in our explanation of QPE.}
+		\label{fig:polyds}
+	\end{figure}
 	
 	\section{Quantum Phase Estimation}
 	\label{sec:qpe}
@@ -40,52 +96,19 @@
 \begin{figure}
 	\centering
 	\title{\textbf{\underline{Approximating eigenvalues by roots of unity}}}
-	\includegraphics[width=0.7\linewidth]{approx}
+	%\includegraphics[width=0.7\linewidth]{approx}
 	\caption{The goal of QPE is to find the eigenvalue of $U$ corresponding to $\ket{\psi}$. For a fixed precision $N$, QPE identifies the closest $N$-th root of unity to the true eigenvalue ($e^{i 2 \pi r}$). Thus we can see the goal of QPE as identifying the value $k$ such that $r$ is closest to $\frac{k}{N}$. Notice how increasing $N$ will make the algorithm more accurate as there will be a finer discretisation of the circle.}
 	\label{fig:approx}
 \end{figure}
-	
-	\subsection{Polynomial Data Structures}
-	
-	\begin{figure}
-		\centering
-		\title{\textbf{\underline{Polynomial Data Structures}}}
-		
-		\vspace{5mm}
-		\includegraphics[width=\linewidth]{polyds.jpg}
-		\caption{This figure depicts the two polynomial data structures and their quantum analogues whic are used in our explanation of QPE.}
-		\label{fig:polyds}
-	\end{figure}
-	
-	
-	
-	This subsection introduces the key data structure concepts that we use in our explanation of QPE. Figure \ref{fig:polyds} shows these concepts and how they are related in one graphic. Once the concepts in this subsection have been understood, then QPE can be explained in just a few lines as we do in the next subsection.
-	
-	The \underline{amplitude encoding of a vector} is the quantum state obtained from normalising the components of a vector and putting them into amplitudes of a quantum state, for example as: $v= [v_0 ... v_{N-1}] \rightarrow \frac{1}{\norm{v}} \sum_{i=0}^{N-1} v_i \ket{i}$.
-	
-	%rewrite this one carefully
-	The \underline{coefficient representation of a polynomial} is a vector containing all its coefficients. For example $p(x) = a_{N-1}x^{N-1} + ... + a_0$ is represented as $a = [a_0 ... a_{N-1}]$. The final step of QPE involves the \textit{amplitude encoding} of the coefficient representation of a polynomial so $p(x) = a_{N-1}x^{N-1} + ... + a_0$ is stored as $\frac{1}{\norm{a}} \sum_{i=0}^{N-1} a_i \ket{i}$. Since the polynomial in question turns out to be a single term polynomial $x^k$, the amplitude encoding of it is just $\ket{k}$. 
-	
-	The \underline{point-value representation of a polynomial} is motivated by the fact that a polynomial ($p$ with degree less than $N$) is represented by a series of points $\{(x_0,p(x_0)), ..., (x_{N-1},p(x_{N-1}))\}$. For example, with two points, we represent the unique line that passes through those points. If we fix the inputs $\{x_0, ..., x_{N-1}\}$ at which we will evaluate the polynomial, then we can just store the values $[p(x_0)...p(x_{N-1})]$ as a vector. We can choose any set of $N$ input values. For our purposes we will choose the N-th roots of unity $\{1,\omega_N, ..., \omega_N^{N-1}\}$ as our set of inputs and store $[p(1)...p(\omega_N^{N-1})]$. This choice makes it efficient to convert between the coefficient and point-value representations. 
-	
-	Consider how we can convert from the coefficient representation to the point value representation. We have to evaluate the polynomial at each of the $N$ inputs. Converting $[1,\omega_N, ..., \omega_N^{N-1}]$ to  $[p(1),...,p(\omega_N^{N-1})]$ requires the following transformation:
 
-	$$p(\omega_N^l) = \sum_{j=0}^{N-1} a_j \omega_N^{jl} = \sum_{j=0}^{N-1} a_j e^{i2\pi jl/N},$$
 	
-	which is exactly the Discrete Fourier Transform. 
-	
-	%We illustrate this in Figure \ref{fig:dft}.
-	
-	When normalised by a $\frac{1}{\sqrt{N}}$ factor, the Discrete Fourier Transform is a unitary matrix. If we implement this matrix as a quantum circuit, it converts from the \textit{amplitude encoding} of the coefficient representation to the \textit{amplitude encoding} of the point-value representation. This circuit is called the Quantum Fourier Transform and it can be implemented efficiently due to a divide-and-conquer algorithm. The details of this are interesting but not essential for a first understanding of QPE, so we discuss it in the next section.
-	
-	The second step of the QPE algorithm performs an inverse-QFT to convert from the amplitude encoding of the point-value representation to the amplitude encoding of the coefficient representation.
 	
 	\subsection{Algorithm}
 	
 	\begin{figure}
 		\centering
 		\title{\textbf{\underline{Quantum Phase Estimation Algorithm}}}
-		\includegraphics{qpe_algorithm.jpg}
+		\includegraphics{qpe_algorithm.png}
 		\caption{High level circuit explaining the Quantum Phase Estimation Algorithm. The algorithm has two steps. Step 1 prepares $\frac{1}{\sqrt{N}}\sum_{j=0}^{N-1}  (\omega^{k}_N)^j \ket{j} = \frac{1}{\sqrt{N}}\sum_{j=0}^{N-1}  (\omega^{j}_N)^k \ket{j}$, which is the amplitude encoding of the point-value representation of the polynomial $x^k$. Step 2 converts to the amplitude encoding of the coefficient representation, yielding $k$.}
 		\label{fig:qpealgorithm}
 	\end{figure}
@@ -176,36 +199,14 @@
 	
 	\end{comment}
 	
+	\section{Other motivations}
 	
-	%\section{Beyond QPE}
+	John Preskill and Watrous motivate it by starting from the Hadamard test. 
 	
-	%\subsection{QPE with approximation error}
-	
-	%In the explanation of QPE in section \ref{sec:qpe}, I assumed that we raised the precision $n$ high enough so that the eigenvalue was an $N-th$ ($N=2^n$)root of unity, and the QPE was exact. Can polynomial data structures explain the behaviour of QPE when it is not exact? 
-	
+	I perceived the traditional explanations to leave the mechanism of the algorithm up to a computation. It would be left to a "computation by the reader", that the probability of measuring certain outcomes was 0 and hence any outcome is one of the desirable ones. This would mean that circuits were merely stated and could be checked to work by means of computation, but no motivation or explanation was given that might aid in memory or in coming up with new algorithms for oneself. 
 	
 	
-	%\section{Other algorithms from a data structure perspective}
-	
-	% Deutsch- Jozsa is about making either the uniform superposition state, or a state perpendicular to that , depending on which oracle you have gotten
-	
-	% The forrelation problem is just about taking that inner product
-	
-	% Simon's algorithm is about preparing a state that is a superposition of j such that j . s = 0
-	% This is a great example of a more complicated procedure of extracting information from a state, but still using the quantum algorithm to make that state. Quantum algorithm gets you some way and sampling gets you the rest of the way. Grover's is also like that in a sense. 
-	
-	% HHL is the most obviously data structure related algorithm 
-	
-	% Shor's is about QPE and the coset representation of integers 
-	
-	% I think Bernstein Vazirani is some kind of Forrelation idea 
-	\section{Notes}
-	This explanation was motivated by reading Ref. \cite{cormen2009algorithms_ch30}.
-	
-	% I perceived the traditional explanations to leave the mechanism of the algorithm up to a computation. It would be left to a "computation by the reader", that the probability of measuring certain outcomes was 0 and hence any outcome is one of the desirable ones. This would mean that circuits were merely stated and could be checked to work by means of computation, but no motivation or explanation was given that might aid in memory or in coming up with new algorithms for oneself. 
-	
-	
-	% A story about QFT and AHSP can be told that sees QFT as mapping from group elements to characters 
+	A story about QFT and AHSP can be told that sees QFT as mapping from group elements to characters 
 	% See https://courses.cs.washington.edu/courses/cse490q/20au/lectures/27-hsp.pdf 
 
 	\bibliographystyle{ieeetr}
