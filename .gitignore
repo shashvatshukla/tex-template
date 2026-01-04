@@ -8,3 +8,7 @@ qpe-ds.log
 qpe-ds.blg
 qpe-ds.thm
 qpe-ds.synctex.gz
+figure-generation/*/*
+!figure-generation/*/*.tex
+!figure-generation/*/*.pdf
+.gitignore

@@ -1,0 +1,37 @@
+\documentclass[tikz, border=10pt]{standalone}
+\usepackage{quantikz}
+
+\begin{document}
+
+		\begin{quantikz}
+	&\gate[4]{QFT_N}&\midstick[4,brackets=none]{\hspace{4mm}=\hspace{4mm}}&\gate[4][2cm]{P}\gateinput[4]{j}\gateoutput[1,label style={yshift=-0.2cm}]{$\begin{pmatrix}1\\\omega_N^j\end{pmatrix}$}&\permute{4,1,2,3}&&\gate[3][4cm]{QFT_{N/2}}& \\
+	&&&\gateoutput[3]{j\%(N/2)}&&&\gateinput[1,label style={xshift=-0.4cm,yshift=-0.5cm}]{\vdots}\gateoutput[1,label style={xshift=0.4cm,yshift=-0.5cm}]{\vdots}&\\
+	&\gateinput[1,label style={xshift=-0.4cm,yshift=-0.6cm}]{\vdots}\gateoutput[1,label style={xshift=0.4cm,yshift=-0.6cm}]{\vdots}&&\gateinput[1,label style={xshift=-0.4cm,yshift=-0.6cm}]{\vdots}\gateoutput[1,label style={xshift=0.4cm,yshift=-0.6cm}]{\vdots}&&&&\\
+	&&&&&&&
+\end{quantikz}
+
+\end{document}
+
+\begin{comment}
+		\begin{quantikz}
+		&\gate[4]{QFT_N}&\midstick[4,brackets=none]{=}&\\
+		&&&\\
+		&&&\\
+		&&&
+	\end{quantikz}
+\end{comment}
+
+% magic line: \gateinput[1,label style={xshift=-0.4cm,yshift=-0.6cm}]{\vdots}\gateoutput[1,label style={xshift=0.4cm,yshift=-0.6cm}]{\vdots}
+
+
+\begin{comment}
+	% This one is good already now trying to move the swaps to after the prep
+		\begin{quantikz}
+	&&\gate[4][2cm]{P}\gateinput[4]{j}\gateoutput[1,label style={yshift=-0.2cm}]{$\begin{pmatrix}1\\\omega_N^j\end{pmatrix}$}&&\permute{4,1,2,3}& \\
+	&&\gateoutput[3]{j\%(N/2)}&\gate[3][4cm]{QFT_{N/2}}&\rstick[2,brackets=none,label style={xshift=0.6cm}]{\vdots}&\\
+	\lstick[2,brackets=none,label style={xshift=0.9cm,yshift=0.1cm}]{\vdots}&&&\gateinput[1,label style={xshift=-0.4cm,yshift=-0.5cm}]{\vdots}\gateoutput[1,label style={xshift=0.4cm,yshift=-0.5cm}]{\vdots}&&\\
+	&&&&&
+\end{quantikz}
+\end{comment}
+
+

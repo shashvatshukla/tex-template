@@ -1,0 +1,18 @@
+\documentclass[tikz, border=10pt]{standalone}
+\usepackage{quantikz}
+
+\begin{document}
+	% Your circuit code here
+\begin{quantikz}
+	\lstick{$\sum_{j=0}^{N-1} \ket{j}$} 
+	&\ctrl{1}
+	&\wire[l][1]["d"{above,pos=0.95}]{a} 
+	&&\slice{}
+	&\gate{QFT^{\dagger}}
+	& \rstick{$\ket{k}$}
+	\\
+	\lstick{$\ket{\psi}$} 
+	&\gate{U^d}
+	&\rstick{$\ket{\psi}$ } 
+\end{quantikz}
+\end{document}

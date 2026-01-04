@@ -1,0 +1,15 @@
+\documentclass[tikz, border=10pt]{standalone}
+\usepackage{quantikz}
+
+\begin{document}
+	% Your circuit code here
+
+	\begin{quantikz}
+		\lstick{} & \gate{H} & \gate{R_2} & \gate{R_3} & \qw \hspace{1mm}\dots \hspace{1mm}& \gate{R_n} & \qw \\
+		\lstick{} & \qw      & \ctrl{-1}  & \qw        & \qw       & \qw        & \qw \\
+		\lstick{} & \qw      & \qw        & \ctrl{-2}  & \qw       & \qw        & \qw \\
+		\lstick{}       &          &            &            &\hspace{1mm} \ddots\hspace{1mm}    &            &     \\
+		\lstick{} & \qw      & \qw        & \qw        & \qw       & \ctrl{-4}  & \qw
+	\end{quantikz}
+
+\end{document}
