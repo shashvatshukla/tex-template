@@ -11,11 +11,11 @@
 \title{Explaining quantum phase estimation using data structures}
 \date{\today}
 \begin{abstract}
-	The quantum phase estimation algorithm is an fundamental technique for performing physical simulation tasks on quantum computers. 
-	Most existing presentations of quantum phase estimation proceed by first stating the quantum circuit for phase estimation and then using an algebraic manipulation to prove its correctness. Such a presentation can be unsatisfactory as it does not explain quantum phase estimation by appeal to any algorithmic ideas.
-	This paper explains the phase estimation algorithm in a new way, using elementary polynomial data structures from computer science as helpful high-level concepts. 
-	Once the polynomial data structure concepts have been understood, the explanation of quantum phase estimation can be stated in just a few lines.
-	We hope this alternative approach to explaining phase estimation will help instructors as quantum computing grows in popularity and is taught in more diverse contexts.
+	The quantum phase estimation algorithm is a fundamental quantum computing technique used in physical simulation and linear algebraic tasks. 
+	It is typically taught by stating the quantum circuit for quantum phase estimation and then proving its correctness by algebraic symbol manipulation. This approach rigorously establishes the correctness of the algorithm, but it does not provide a high-level algorithmic perspective on what the algorithm is doing.
+	This paper explains the phase estimation algorithm using high-level concepts, by showing that quantum phase estimation employs elementary polynomial data structures from classical computer science. 
+	Once the polynomial data structure concepts have been taught to students, the explanation of the quantum phase estimation algorithm can be stated in just a few lines.
+	As quantum computing continues to grow in popularity and is taught in more diverse contexts, we hope this alternative approach to explaining phase estimation will be useful to students and instructors.
 \end{abstract}
 \maketitle
 
@@ -32,37 +32,69 @@
 %A paper's introductory section must provide the background and context that a typical physicist, regardless of area of specialization, would need in order to understand the paper's purpose and importance. That is, it should motivate the paper, in a way that is both informative and inviting. Unlike the abstract, the introduction need not summarize the entire paper or state its main results. Often, however, the introduction ends with a paragraph that outlines how the rest of the paper is organized; this is especially useful for longer papers.
 	
 % quantum computing, quantum algorithms, quantum phase estimation
-Quantum computers promise new algorithms for solving problems that are intractable on classical computers \cite{nielsen2010quantum}. Their power comes from quantum bits (qubits), which, unlike classical bits, can exploit superposition, interference, and entanglement to store and process information more efficiently. Among the most important algorithms that harness this power is quantum phase estimation\cite{kitaev1995quantum}. It is a subroutine in algorithms for the simulation of physical systems\cite{abrams1999quantum} and in Shor’s factoring algorithm\cite{shor1994algorithms}.
+Quantum computers promise new algorithms for solving problems that are intractable on classical computers \cite{nielsen2010quantum}. Their power comes from quantum bits (qubits), which, unlike classical bits, can exploit superposition, interference, and entanglement to store and process information more efficiently. Among the most important algorithms that harness this power is quantum phase estimation\cite{kitaev1995quantum}. It is a subroutine in seminal algorithms such as in the simulation of physical systems\cite{abrams1999quantum} and in Shor’s factoring algorithm\cite{shor1994algorithms}, and it is continues to be employed in novel quantum algorithms\cite{schmidhuber2025quartic, berry2024analyzing}.
 
-% the problem we solve, how we solve it. accessibility, interestingness and connection to other fields. 
-Most existing presentations of phase estimation use detailed algebraic derivations\cite{nielsen2010quantum, wong2022introduction}. They generally present the quantum circuit for the algorithm and present an analysis of the correctness of the algorithm by means of algebraic manipulation. While rigorous, they often obscure the underlying ideas and can be tedious especially for settings where a quick, high-level explanation would be sufficient. The usefulness of this paper is in providing an alternative explanation for quantum phase estimation. We show how elementary data structures for representing and multiplying polynomials efficiently and a divide-and-conquer approach can help explain the quantum phase estimation algorithm at a high level. Instructors can consider whether the usual algebraic details are required in their course, and they may opt to leave them to students in the form of homework exercises to be done only after the students are comfortable with the main algorithmic idea.
+% the problem we solve
+Existing presentations of quantum phase estimation state the quantum circuit for the algorithm and present an analysis of the correctness of the algorithm by means of algebraic symbol manipulation\cite{nielsen2010quantum, wong2022introduction}. While this approach is rigorous, we find the symbolic reasoning to be cumbersome. Moreover, we think that it obscures the algorithmic ideas of quantum phase estimation, since students are not explained how they may have discovered the algorithm by themselves, or how it may be similar to other algorithms in classical or quantum computer science. This could make it hard for students to remember how quantum phase estimation works, or to intuitively reason about variants of the algorithm without performing laborious derivations. It would be better if the rigorous algebraic details were presented only after some high-level ideas that capture how the algorithm works.
+
+% how we solve it. accessibility, interestingness and connection to other fields. 
+The usefulness of this paper is in providing such an alternative explanation for quantum phase estimation that is described in terms of algorithmic ideas that are well-known in classical computer science. We show how data structures for polynomials and a divide-and-conquer framing explain the quantum phase estimation algorithm in a simple way. Note that data structures are an essential concept in the study of classical algorithms. It is common for the crux of an algorithm to be a clever data structure that makes the storage and processing of information in that computational task more efficient. Although quantum phase estimation has not been described in this way before, we show how such a data structure approach simplifies its presentation and points to the source of the quantum advantage. %Similarly, divide-and-conquer is a key algorithmic approach in computer science for designing efficient algorithms. In quantum phase estimation, divide-and-conquer appears within the subroutine known as the quantum Fourier transform (QFT). While not all unitary transformations have efficient circuits, it is possible to efficiently perform QFT because the circuit for it can be constructed using a divide-and-conquer approach on the unitary matrix for QFT. 
 
 % why it has broad appeal
-An ever-larger community of scientists will need at least a working understanding of phase estimation because quantum computing is a growing scientific area and industry in its own right, and it is expected that it will be applied in various branches of science. With the rapid growth of university courses and programs in quantum computing, many instructors across physics will find themselves teaching or applying it. We hope our conceptual explanation will be helpful to these instructors.
+An ever-larger community of scientists will need at least a working understanding of phase estimation because quantum computing is a growing scientific area and industry in its own right, and it is expected that it will be applied in various branches of science. With the rapid growth of university courses and programs in quantum computing, many instructors across physics and other departments will find themselves teaching or applying it. We hope our conceptual explanation will be helpful to these instructors. Instructors who use our explanation in their courses, may also decide to include the usual algebraic details if this is appropriate, whether as further course material or incorporated into homework exercises.
 	
 \section{Data structures for phase estimation}
 
 This section introduces the concepts that feature in our explanation of quantum phase estimation. We first review classical data structures for representing polynomials, then show how these motivate the Discrete and Fast Fourier transforms, and finally explain the quantum analogues of these ideas. Table~\ref{tbl:data_structures} condenses these concepts and how they are related. 
 	
+	
+
+\begin{table}[h!]
+	\centering
+	\renewcommand{\arraystretch}{1.4} % adds vertical space between rows
+	\begin{tabular}{|c|c|c|}
+		\hline
+		\textbf{} & \textbf{Coefficient Representation} & \textbf{Point-value Representation} \\
+		\hline
+		Classical &
+		$[\,a_0 \quad a_1 \quad \dots \quad a_{N-1}\,]$ &
+		$[\,p(1) \quad p(\omega_N) \quad \dots \quad p(\omega_N^{N-1})\,]$ \\[1em]
+		\hline
+		Quantum (Amplitude encoding) &
+		$\displaystyle \frac{1}{\|a\|} \sum_{j=0}^{N-1} a_j \, |j\rangle$ &
+		$\displaystyle \frac{1}{\sqrt{N}\|a\|} \sum_{j=0}^{N-1} p(\omega_N^j) \, |j\rangle$ \\
+		\hline
+	\end{tabular}
+	\caption{Data structures for storing the polynomial $p(x) = a_0 + ... + a_{N-1} x^{N-1}$. The two classical data structures (top row) are stored as a list of values or a vector. The two quantum data structures (bottom row) are quantum states known as the \textit{amplitude encodings} of these vectors. We can convert from the coefficient representation to the point-value representation by applying the Discrete Fourier Transform (DFT) in the classical case, and the Quantum Fourier Transform (QFT) in the quantum case. To convert in the other way, the inverse-DFT or inverse-QFT may be used.}
+	\label{tbl:data_structures}
+\end{table}
 
 	\subsection{Polynomial data structures}	
 	
 	% Coefficient representation
-	The material in this section can be motivated by asking students to consider how polynomials might be represented in a classical computer. 
+	The material in this subsection can be motivated by asking students to consider how polynomials might be represented in a classical computer. 
 	The straightforward approach, the \textbf{coefficient representation} of a polynomial \cite{cormen2009algorithms_ch30} involves storing a vector (or list) of all its coefficients. For example the polynomial $p(x) = a_{N-1}x^{N-1} + ... + a_0$ is stored as the vector $a = [a_0 ... a_{N-1}]$. 
 	
 	% Point value representation
-	There are other data structures for polynomials \cite{cormen2009algorithms_ch30}. Consider the \textbf{point-value representation} of a polynomial \cite{cormen2009algorithms_ch30}, which uses the fact that a polynomial, $p$, with degree less than $N$ is uniquely determined by a set of $N$ distinct points $\{(x_0,p(x_0)), ..., (x_{N-1},p(x_{N-1}))\}$. For example, if we store two points, we represent the unique line that passes through those points. If we fix the inputs $\{x_0, ..., x_{N-1}\}$ at which we will evaluate every polynomial, then we can represent the any polynomial of degree up to $N$ by only storing the values $[p(x_0)...p(x_{N-1})]$ as a vector. We are free to choose any set of $N$ distinct input values for this purpose.
+	There are other data structures for polynomials. Consider the \textbf{point-value representation} of a polynomial \cite{cormen2009algorithms_ch30}, which uses the fact that a polynomial, $p$, with degree less than $N$ is uniquely determined by a set of $N$ distinct points $\{(x_0,p(x_0)), ..., (x_{N-1},p(x_{N-1}))\}$. For example, storing two points represents the unique line that passes through them. For a polynomial of degree less than $N$, we can evaluate it at $N$ different points and store the identities of those points. Note that we are free to choose any set of $N$ distinct input values for this purpose, and regardless of our choice these points uniquely identity the polynomial. It is convenient to use the same set of input values for all the different polynomials we are storing. If we use the inputs $\{x_0, ..., x_{N-1}\}$ to create point-value representations, then any polynomial, $p$ of degree up to $N$ can be stored as the vector $[p(x_0)...p(x_{N-1})]$. This is explained with examples in Figure \ref{fig:polyinterpolation}.
+	
+	
+\begin{figure}
+	\centering
+	\includegraphics[width=\linewidth]{poly_interpolation}
+	\caption{There is only one polynomial of degree less than four that passes through the four points $\{(0,1),(1,1),(2,1),(3,7)\}$, and it is $x^3 -3x^2+2x+1$. Similarly the polynomial $-x^2+4x+4$ is the only polynomial of degree less than four that passes through the four points $\{(0,4),(1,7),(2,8),(3,7)\}$. Thus we may represent the polynomials by these sets of points. If we use inputs $x=0,1,2,3$ to create point-value representations, then we may simply store $p_1$ as $[1,1,1,7]$, and $p_2$ as $[4,7,8,7]$.}
+	\label{fig:polyinterpolation}
+\end{figure}
 	
 	% The coefficient representation makes multiplication easier, dont need to bring in Horner's rule at all
-	The point-value representation is significant in classical algorithms because multiplying two polynomials that are represented in this way is efficient. For two polynomials $p$ and $q$, their product $r = p \cdot q$ can be obtained simply by multiplying their stored values coordinate by coordinate:
+	The point-value representation is significant in classical algorithms because multiplying two polynomials that are represented in this way is efficient. For two polynomials $p$ and $q$, their product $r = p \cdot q$ can be obtained simply by multiplying their stored values coordinate-wise:
 	\begin{equation}
 	[r(x_0), \ldots, r(x_{N-1})] = [p(x_0)q(x_0), \ldots, p(x_{N-1})q(x_{N-1})].
 	\end{equation}
-	One requirement for this multiplication procedure is that polynomials $p$ and $q$ each have degree less than $N/2$ so that the resulting product $r$ still has degree less than $N$ and can be uniquely determined by $N$ evaluation points. Multiplication of polynomials in the point-value representation only requires $\mathcal{O}(N)$ multiplications of numbers. In contrast, multiplication of polynomials in the coefficient representation requires combining and summing cross-terms, which requires $O(N^2)$ additions and multiplications of numbers.
+	This procedure works as long as the polynomials $p$ and $q$ each have degree less than $N/2$ so that the resulting product $r$ still has degree less than $N$ (and can thus be uniquely determined by $N$ points). Multiplication of polynomials in the point-value representation only requires $\mathcal{O}(N)$ multiplications of numbers. In contrast, multiplication of polynomials in the coefficient representation is done by long multiplication \cite{west2011introduction} which requires $\mathcal{O}(N^2)$ additions and multiplications of numbers to combine and sum cross-terms.
 	
 % Switching data structure representations to benefit from the faster multiplication operation
-We now motivate the discrete Fourier transform from this perspective. The coefficient representation is the more common and natural choice, so one would hope to store their polynomials in the coefficient representation but use a method to convert between the two representations efficiently in order to take advantage of the faster multiplication algorithm in the point-value representation. The naive approach to converting from coefficients to point values requires multiplying by a Vandermonde matrix. For example, given $p(x) = a_0 + a_1 x + \cdots + a_{N-1}x^{N-1}$ and fixed evaluation points $\{x_0, \ldots, x_{N-1}\}$, the point value representation is obtained by:
+The coefficient representation is the more common and natural choice, so one would hope to store polynomials in the coefficient representation but use a method to convert between the two representations in order to take advantage of the faster multiplication algorithm in the point-value representation. However this idea only works if we convert between representations efficiently. The naive approach to converting from coefficients to point values requires multiplying by a Vandermonde matrix\cite{klinger1967vandermonde}. For example, given $p(x) = a_0 + a_1 x + \cdots + a_{N-1}x^{N-1}$ and fixed evaluation points $\{x_0, \ldots, x_{N-1}\}$, the point value representation is obtained by:
 \begin{equation}
 \begin{bmatrix}
 	p(x_0) \\
@@ -82,11 +114,10 @@ We now motivate the discrete Fourier transform from this perspective. The coeffi
 \end{bmatrix}.
 \end{equation}
 
-In general multiplying a matrix onto a vector requires $O(N^2)$ elementary operations. Thus we cannot hope to benefit from the $O(N)$ multiplication of the point-value representation if we convert representations in the naive way.
-%%%% State how good FFT is and make the link back here so rest of the explanation can just be about FFT
+In general, multiplying a matrix onto a vector requires $\mathcal{O}(N^2)$ elementary operations, and thus the naive approach to converting between the coefficient and point-value representations requires $\mathcal{O}(N^2)$ time. However directly performing the multiplication in the coefficient representation also takes $O(N^2)$ time, and thus a slow $O(N^2)$ conversion can offer us no shortcuts to multiplying polynomials. 
 
 % DFT and FFT
-However it is possible to convert representations in $O(N\log N)$ time if we choose the a special set of evaluation points. Specifically, if we choose the $N$-th roots of unity (i.e. powers of $\omega_N = e^{i\frac{2\pi}{N}}$) then the Vandermonde matrix becomes
+However it is possible to convert representations in $O(N\log N)$ time if we choose a special set of evaluation points to construct the point-value representation. Specifically, if we choose the $N$-th roots of unity (i.e. powers of $\omega_N = e^{i\frac{2\pi}{N}}$) then we get the following Vandermonde matrix:
 \begin{equation}
 F_N =
 \begin{bmatrix}
@@ -97,24 +128,28 @@ F_N =
 	1 & \omega_N^{N-1} & \omega_N^{2(N-1)} & \cdots & \omega_N^{(N-1)(N-1)}
 \end{bmatrix}.
 \end{equation}
-This matrix $F_N$ is called the discrete Fourier transform (DFT) matrix. Applying it to the coefficient vector $[a_0, \ldots, a_{N-1}]$ computes the values $p(1), p(\omega_N), \ldots, p(\omega_N^{N-1})$. 
+This matrix ($F_N$) is called the discrete Fourier transform (DFT) matrix, and it is an important concept in signal processing, functional analysis and abstract algebra. Applying it to the coefficient vector $[a_0, \ldots, a_{N-1}]$ computes the values $p(1), p(\omega_N), \ldots, p(\omega_N^{N-1})$. The Fast Fourier Transform (FFT) is a divide-and-conquer method to multiply $F_N$ to a vector in only $O(N\log N)$ time, making the conversion between coefficient and point-value representations more efficient. 
 
-The Fast Fourier Transform (FFT) is a divide-and-conquer method to multiply $F_N$ to a vector in only $O(N\log N)$ time, making the conversion between coefficient and point-value representations efficient.
+The key idea is to split the $N$ coefficients $(a_0, \ldots, a_{N-1})$ into their even- and odd-indexed parts, forming two smaller polynomials of size $N/2$. These smaller polynomials are only evaluated at even powers of $\omega_N$ and so only need to be evaluated at half as many inputs. Define $p_{\text{even}}(x) = a_0 + a_2 x + a_4 x^2 + ... $ and $p_{\text{odd}}(x) = a_1 + a_3 x + a_5 x^2 + ... $, so that $p(x) \equiv  p_{\text{even}}(x^2) + x \cdot p_{\text{odd}}(x^2)$.
 
-	% Explain the divide and conquer strategy of QFT
-	The key idea is to split the $N$ coefficients $(a_0, \ldots, a_{N-1})$ into their even- and odd-indexed parts, forming two smaller polynomials of size $N/2$. These smaller polynomials can be evaluated at all the points more efficiently because some values repeat, and only half as many polynomial evaluations are needed. For instance, since
+
+Notice that:
 	\[
 	\omega_N^{2(i + N/2)} = \omega_N^{2i}\,\omega_N^{N} = \omega_N^{2i},
 	\]
-	we have
+	which means,
 	\[
-	p_{\text{even}}(\omega_N^{i + N/2}) = p_{\text{even}}(\omega_N^i),
+	p_{\text{even}}((\omega_N^{i + N/2})^2) = p_{\text{even}}((\omega_N^i)^2), \text{and}
 	\]
-	i.e. the evaluations at $\omega_N^i$ and $\omega_N^{i+N/2}$ are identical for all $i$. This is also true for the odd-indexed part. Then combining the results using simple additions and multiplications by powers of $\omega_N$:
+	\[
+	p_{\text{odd}}((\omega_N^{i + N/2})^2) = p_{\text{odd}}((\omega_N^i)^2).
+	\]
+	Thus we only need to evaluate $p_{\text{even}}(x^2)$ (or $p_{\text{odd}}(x^2)$) at half the inputs $\omega_N^i$, namely when $i = 0, 1, ..., N/2 -1$, as the remaining values will be repetitions. We can then combine the evaluations using simple additions and multiplications as:
 	\begin{equation}
-		p(\omega_N^k) = p_{\text{even}}(\omega_N^{2k}) + \omega_N^k\, p_{\text{odd}}(\omega_N^{2k}), \qquad k = 0, \ldots, N/2 - 1.
+		p(\omega_N^k) = p_{\text{even}}(\omega_N^{2k}) + \omega_N^k\, p_{\text{odd}}(\omega_N^{2k}), \qquad k = 0, \ldots, N - 1.
 	\end{equation}
-	Recursively applying this decomposition halves the problem size at each step, reducing the total work from $O(N^2)$ to $O(N\log N)$.
+
+	The time complexity of this approach is thus given by the recursive function $T(N) = 2\cdot T(N/2) + \mathcal{O}(N)$, as each problem of evaluating the polynomial is divided into two polynomial evaluation problems of half the size, and a linear time combination step. Solving this recursion shows that the Fast Fourier Transform reduces the time complexity of converting polynomial representations from $\mathcal{O}(N^2)$ to $\mathcal{O}(N\log N)$.
 		
 	
 	%%%% Add a figure to illustrate the options of multiplying directly or after conversion
@@ -122,35 +157,47 @@ The Fast Fourier Transform (FFT) is a divide-and-conquer method to multiply $F_N
 	\subsection{Quantum data structures}
 	
 	% How to motivate this material
-	After students have been introduced to the background concepts in the previous section, the material in this section can be motivated as the natural quantum analogues of the concepts in the previous section. 
+	The material in this subsection can be motivated as the quantum analogues of the classical polynomial data structures from the previous subsection.
 	
 	% Amplitude encoding, ~ of polynomial data structures
-	Quantum computers are capable of performing some computations on large vectors efficiently by encoding the data into the amplitudes of a quantum state. Since an $n$ qubit quantum state is described using a vector of $2^n$ amplitudes, computations that encode vectors as quantum states and use them are capable of achieving large advantages in space and time complexity. The standard encoding, known as the \textbf{amplitude encoding} of a vector, is the quantum state obtained by normalising the components of a vector and putting them into amplitudes of a quantum state, for example as: $v= [v_0 ... v_{N-1}] \rightarrow \frac{1}{\norm{v}} \sum_{i=0}^{N-1} v_i \ket{i}$. Our explanation of QPE will feature the \textit{amplitude encodings} of the coefficient and point-value representations of polynomials.%monomials of the form $x^k$. 
+	Quantum computers are capable of performing some computations on large vectors efficiently by encoding the data into the amplitudes of a quantum state. Since an $n$ qubit quantum state is described using a vector of $2^n$ amplitudes, computations on vectors encoded as quantum states are capable of achieving large advantages in space and time complexity. The standard encoding, known as the \textbf{amplitude encoding} of a vector, is the quantum state obtained by normalising the vector and putting the coefficients into amplitudes of a quantum state, for example as: $v= [v_0 ... v_{N-1}] \rightarrow \frac{1}{\norm{v}} \sum_{i=0}^{N-1} v_i \ket{i}$. Our explanation of QPE features the amplitude encodings of the coefficient and point-value representations of polynomials.
 	
 	% DFT , QFT
-	The primary way that quantum computers manipulate these amplitude encoded vectors is by the multiplication of unitary matrices. 
-	When normalised by a $\frac{1}{\sqrt{N}}$ factor, the Discrete Fourier Transform is a unitary matrix. If we implement this matrix as a quantum circuit, it converts from the \textit{amplitude encoding} of the coefficient representation to the \textit{amplitude encoding} of the point-value representation. This circuit is called the Quantum Fourier Transform and it can be implemented efficiently due to a divide-and-conquer algorithm which follows a similar logic to the divide-and-conquer approach of the Fast Fourier Transform \cite{paradisi2004presentation}.
+	The primary way that quantum computers manipulate amplitude encoded vectors is by unitary operations. 
+	When normalised by a $\frac{1}{\sqrt{N}}$ factor, the Discrete Fourier Transform is a unitary matrix. Just as the Discrete Fourier Transform converts the coefficient representation to the point-value representation, its quantum circuit version converts the \textit{amplitude encoding} of the coefficient representation to the \textit{amplitude encoding} of the point-value representation. This circuit, and the transformation it implements, are both called the Quantum Fourier Transform (QFT). The circuit can be implemented efficiently by using a divide-and-conquer approach just like the Fast Fourier Transform \cite{paradisi2004presentation}. The action of QFT on an $N$-dimensional computational basis state can be recursively defined in terms of a QFT on an $N/2$-dimensional computational basis state as:
+	
+	\begin{align*}
+		QFT_N \ket{j}_{\text{n qubits}} = \frac{1}{\sqrt{N}}\begin{pmatrix}1 \\ \omega_N^j \\ \vdots \\ \omega_N^{j(N-1)}\end{pmatrix} &= \frac{1}{\sqrt{N/2}}\begin{psmallmatrix}1 \\ \omega_N^{2j} \\ \vdots \\ \omega_N^{j(N-2)}\end{psmallmatrix} \otimes \frac{1}{\sqrt{2}}\begin{pmatrix}1 \\ \omega_N^j\end{pmatrix} \\
+		&= QFT_{N/2} \ket{j \mod (N/2)}_{\text{n-1 qubits}} \otimes \frac{1}{\sqrt{2}}\begin{pmatrix}1 \\ \omega_N^j\end{pmatrix},
+	\end{align*}
+where $n= \log_2 N$.
+	The circuit to prepare a qubit in the state $\frac{1}{\sqrt{2}}\begin{psmallmatrix}1 \\ \omega_N^j\end{psmallmatrix}$ starting from $\ket{j}$ is shown in Figure \ref{fig:qft-one-step}. It relies on the base-2 representation of $\ket{j}$ as $\ket{b_{n-1}\dots b_0}$, and the product $\omega_N^j = \omega_{2^1}^{b_{n-1}}\dots\omega_{2^{n-1}}^{b_1}\omega_{2^n}^{b_0}.$
+
+	Figure \ref{fig:qft-recursion} shows how this divide-and-conquer approach gives a recursive definition of the QFT circuit, and Figure \ref{fig:qft-circuit} shows an explicit definition of the QFT circuit in terms of elementary logic gates, when this recursion is solved. The QPE algorithm uses the inverse-QFT circuit. This can be obtained by simply reversing the QFT circuit and inverting every gate. 
 
 
-\begin{table}[h!]
+\begin{figure}
 	\centering
-	\renewcommand{\arraystretch}{1.4} % adds vertical space between rows
-	\begin{tabular}{|c|c|c|}
-		\hline
-		\textbf{} & \textbf{Coefficient Representation} & \textbf{Point-value Representation} \\
-		\hline
-		Classical &
-		$[\,a_0 \quad a_1 \quad \dots \quad a_{N-1}\,]$ &
-		$[\,p(1) \quad p(\omega_N) \quad \dots \quad p(\omega_N^{N-1})\,]$ \\[1em]
-		\hline
-		Quantum (Amplitude encoding) &
-		$\displaystyle \frac{1}{\|a\|} \sum_{j=0}^{N-1} a_j \, |j\rangle$ &
-		$\displaystyle \frac{1}{\sqrt{N}\|a\|} \sum_{j=0}^{N-1} p(\omega_N^j) \, |j\rangle$ \\
-		\hline
-	\end{tabular}
-	\caption{Data structures for storing polynomial $p(x) = a_0 + ... + a_{N-1} x^{N-1}$. The two classical data structures are a list of values or a vector. The two quantum data structures are the amplitude encodings of the same vectors. We can convert from the coefficient representation to the point-value representation by applying the Discrete Fourier Transform in the classical case, and the Quantum Fourier Transform in the quantum case. }
-	\label{tbl:data_structures}
-\end{table}
+	\includegraphics[width=0.7\linewidth]{figure-generation/qft-one-step/qft-one-step}
+	\caption{The quantum circuit that uses the input computational basis state $\ket{j}$ to prepare the first qubit in the state $\frac{1}{\sqrt{2}}\begin{psmallmatrix}1 \\ \omega_N^j\end{psmallmatrix}$. In this notation, $R_k = \ket{0}\bra{0} + \omega_{2^k}\ket{1}\bra{1}$. The remaining qubits are left in the state $\ket{j\mod N/2}$, which is the bitstring for $j$ with its most significant bit removed.}
+	\label{fig:qft-one-step}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.7\linewidth]{figure-generation/qft-recursion/qft-recursion}
+	\caption{Recursive definition of the quantum Fourier transform circuit. The circuit for the operation $P$ is shown in Figure \ref{fig:qft-one-step}.}
+	\label{fig:qft-recursion}
+\end{figure}
+\begin{figure}
+	\centering
+	\includegraphics[width=0.7\linewidth]{figure-generation/qft-circuit/qft-circuit}
+	\caption{Explicit quantum circuit for the quantum Fourier transform, which can be obtained by solving the recursion in Figure \ref{fig:qft-recursion}.}
+	\label{fig:qft-circuit}
+\end{figure}
+
+
+
 
 
 
@@ -161,40 +208,65 @@ The Fast Fourier Transform (FFT) is a divide-and-conquer method to multiply $F_N
 	% Problem and set up
 	
 	\subsection{Problem}
-	We now apply the above concepts to explain quantum phase estimation (QPE). The QPE problem formalizes the task of extracting an eigenvalue of a unitary operator given an eigenstate. 
-	%%%% Edit from here. Merge bits of precision thing earlier.
+	
+	This subsection motivates the Quantum Phase Estimation problem as a natural quantum analogue of an eigenvalue problem. 
+	
+	Classical algorithms take $\mathcal{O}(n^3)$ time to find\cite{trefethen2022numerical} all the eigenvalues of a given matrix. On the other hand, if an eigenvector $v$ of a matrix $A$ is known, the \textit{corresponding eigenvalue} can be found in $\mathcal{O}(n^2)$ time by computing $\frac{v^T A v}{v^T v}$. Since quantum computers natively operate large matrices and vectors, the use of quantum computers for linear algebraic tasks has been an active field of research. 
+	
+	Quantum phase estimation is the quantum analogue of the task of computing the \textit{corresponding eigenvalue} when given a matrix and an eigenvector. A key difference between the QPE problem and its classical counterpart is how the data is provided. In QPE, the eigenvector is given as a quantum state in which the vector is amplitude encoded, and the matrix is given as a quantum circuit of which we are given a description. Note that this complicates the comparison of the classical and quantum algorithms, as they only solve analogous but not exactly the same problems. One way to put them on an equal footing is to view QPE as an extra tool for the classical corresponding eigenvalue problem, that can be used if the input data meets the extra requirements of the quantum algorithm. This can occur when the matrix and eigenvector are too large to operate on directly but still have some structure that makes it easy to work with them on a quantum computer. Notably, this occurs in the case of Hamiltonian simulation, where the unitary operations corresponding to the time evolutions of many interesting Hamiltonians can be implemented as efficient quantum circuits\cite{aspuru2005simulated}.
+	
+	 We may state the QPE problem formally as follows: 
+	
+	
 	\begin{problem*}
-		Let $U$ denote a unitary matrix, and let $\ket{\psi} \in \mathbb{P}(\mathbb{C}^N)$ be an eigenvector of $U$ with corresponding eigenvalue $\omega_N^k = e^{i 2 \pi k/N}$, where $k\in \mathbb{Z}$ is an unknown.  
-		
-		Given: 
+		Let $U$ denote a unitary matrix, and let $\ket{\psi} \in \mathbb{C}^N$ be an eigenvector of $U$ with corresponding eigenvalue $\omega_N^k = e^{i 2 \pi k/N}$ for some $k\in \{0,1,...,N-1\}$, the objective is to determine $k$ given:
 		\begin{enumerate}
 			\item $\ket{\psi}$ as one copy of the quantum state, and
-			\item access to $U$ via black-box calls to a qudit-controlled-$U^d$ gate,
+			\item access to $U$ via black-box calls to a qudit-controlled-$U^d$ gate.
 		\end{enumerate} 
-		the objective is to determine $k$. 
 	\end{problem*}
+
 	We define the qudit-controlled-$U^d$ gate, as the gate that acts in the following manner:
-	$(C_dU^d) \ket{j}\ket{\phi} = \ket{j}U^j\ket{\phi}$. This is a generalisation of the standard controlled-$U$ gate, which either applies the $U$ gate 0 or 1 times, depending on the controlling register. The qudit-controlled-$U^d$ gate applies the $U$ gate $j$ times, if the number in the controlling register is $j$. This allows us to apply $U$ different numbers of times in a controlled way. 
+	$(C_dU^d) \ket{j}\ket{\phi} = \ket{j}U^j\ket{\phi}$. This is easily motivated as a generalisation of the standard controlled-$U$ gate, which either applies the $U$ gate 0 or 1 times, depending on the value of the controlling qudit. The qudit-controlled-$U^d$ gate applies the $U$ gate $j$ times, if the value of the controlling qudit is $j$. This allows us to apply $U$ different numbers of times in a controlled way. 
+	
+		%%%% One or two sentences here about QPE speedup
 	
 	\subsection{Algorithm}
 	
+	
+	This subsection shows how the high-level concepts above can be used to explain the QPE algorithm in just a few lines. 
+	 
+	 
 	\begin{figure}
 		\centering
 		\title{Quantum Phase Estimation Algorithm}
-		\includegraphics[width=\linewidth]{qpe_circuit.pdf}
-		\caption{High level circuit explaining the Quantum Phase Estimation Algorithm. The algorithm has two steps. Step 1 prepares $\frac{1}{\sqrt{N}}\sum_{j=0}^{N-1}  (\omega^{k}_N)^j \ket{j} = \frac{1}{\sqrt{N}}\sum_{j=0}^{N-1}  (\omega^{j}_N)^k \ket{j}$, which is the amplitude encoding of the point-value representation of the polynomial $x^k$. Step 2 converts to the amplitude encoding of the coefficient representation, yielding $k$.}
-		\label{fig:qpealgorithm}
+		
+		\includegraphics{figure-generation/qpe-circuit/qpe-circuit.pdf}
+		
+		\caption{High level circuit explaining the Quantum Phase Estimation Algorithm. The algorithm has two steps, separated by the dashed line. Step 1 prepares $\frac{1}{\sqrt{N}}\sum_{j=0}^{N-1}  (\omega^{k}_N)^j \ket{j} = \frac{1}{\sqrt{N}}\sum_{j=0}^{N-1}  (\omega^{j}_N)^k \ket{j}$, which is the amplitude encoding of the point-value representation of the polynomial $x^k$. Step 2 converts to the amplitude encoding of the coefficient representation, yielding $k$.}
+		\label{fig:qpe-circuit}
 	\end{figure}
-	
-	The Quantum Phase Estimation algorithm is a quantum circuit that uses the qudit-controlled-$U^d$ gate and the quantum state $\ket{\psi}$ to determine the eigenvalue. 
-	This circuit has two parts. The first part \textbf{prepares an amplitude encoding of the point-value representation of the polynomial} $\bf{x^k}$. This can be shown from a simple derivation, notice that the resultant state has amplitudes equal to taking each root of unity to the $k$-th power: 
+
+	The Quantum Phase Estimation algorithm is a quantum circuit (Figure \ref{fig:qpe-circuit}) that uses the qudit-controlled-$U^d$ gate and the quantum state $\ket{\psi}$ to determine the eigenvalue of $\ket{\psi}$ with respect to $U$. 
+	This circuit has two parts. The first part \textbf{prepares an amplitude encoding of the point-value representation of the polynomial} $\bf{x^k}$. This can be shown as follows:
 	\begin{eqnarray}
 		&C_dU^d [\frac{1}{\sqrt{N}}\sum_{j=0}^{N-1} \ket{j}\ket{\psi}] \nonumber \\
 		&=\frac{1}{\sqrt{N}}\sum_{j=0}^{N-1}  (\omega^{k}_N)^j \ket{j} \ket{\psi}  &(\text{Since } U\ket{\psi} = \omega_N^k \ket{\psi}) \nonumber \\
-		&=\frac{1}{\sqrt{N}}\sum_{j=0}^{N-1}  (\omega^{j}_N)^k \ket{j} \ket{\psi} 
+		&=\frac{1}{\sqrt{N}}\sum_{j=0}^{N-1}  (\omega^{j}_N)^k \ket{j} \ket{\psi}.
 	\end{eqnarray}
+	Notice that the resultant state has amplitudes equal to taking each root of unity to the $k$-th power, and is thus an encoding of the polynomial $x^k$. 
 	
-	The second part \textbf{converts to the amplitude encoding of the coefficient representation of the polynomial} using the inverse-QFT, giving us the outcome $\ket{k}$ since the polynomial was $x^k$. 
+	The second part \textbf{converts to the amplitude encoding of the coefficient representation of the polynomial} using the inverse-QFT, giving us the outcome $\ket{k}$ since the encoded polynomial was $x^k$. 
+	
+	The running time of this algorithm depends heavily on the circuit complexity of implementing the qudit-controlled-$U^d$ operation. When this can be done efficiently in time that is polylogarithmic in $N$, the QPE algorithm is capable of achieving exponential speedups over classical algorithms that use time polynomial in $N$ to operate on the explicit matrix, $U$.
+	
+	\section{Conclusion}
+	
+	This paper first explained the following high-level computer science concepts: data structures for polynomials, the discrete and fast Fourier transforms, amplitude encodings and the quantum Fourier transform. The two main themes in these ideas were: 1) the study of data structures, which concerns different ways in which data can be stored and their relative strengths and weaknesses; and 2) divide-and-conquer approaches to algorithm design.
+	
+	Our paper is then able to explain the quantum phase estimation algorithm very quickly, as the high level concepts make it intuitive to understand what the algorithm is doing. We also showed how this intuitive understanding of what the algorithm is doing makes it easy to derive the quantum circuit to be used. Using our approach saves instructors and students from a complex proof relying on algebraic symbol manipulation that is used in most presentations of QPE. In order to receive these benefits however our explanation relies on teaching some material on data structures which is not typical of quantum computing courses. We believe this material on data structures is easy to grasp as it mostly serves to give names and interpretations that help the student understand and remember the details of the mathematics of QPE.
+	
+	We believe this teaching approach leaves students with a number of easy-to-remember and reusable computer science ideas which they may combine to develop quantum algorithms themselves. In particular, data structures are emerging as a new perspective to describe quantum algorithms. A data structure perspective has similarly been used to explain the Deutsch-Jozsa algorithm \cite{firstimpression_dj} in an intuitive way. Data structure approaches have also been suggested for quantum algorithmic primitives \cite{kallaugher2025design,zhao2016fast} that can be used by programmers without the need for understanding underlying quantum information. We hope further investigations will recast more quantum algorithms in terms of data structures, and use the perspective to develop new algorithms. 
 	
 	%\section{Quantum Fourier Transform}
 	
@@ -207,9 +279,7 @@ The Fast Fourier Transform (FFT) is a divide-and-conquer method to multiply $F_N
 	%Polynomials can be stored in classical computers as vectors of coefficients (coefficient representation), or else by simply evaluating the polynomial at a sufficient number of points (point-value representation). In the latter case, we need to evaluate the polynomial at enough points such that the polynomial can be uniquely identified from the points (for example storing two points is enough to uniquely identify a linear function, three points is enough for a quadratic function, etc.). These data structures have different strengths so we want to be able to efficiently convert between them. In particular, choosing to evaluate the polynomial at a set of roots of unity makes this efficient, and this transformation is called the Discrete Fourier Transform. 
 	
 	%Naive algorithms for this conversion take $O(n^2)$ time, but if the points at which the polynomial is evaluated are chosen to be the roots of unity, then it can be done more efficiently. This transformation is called the Discrete Fourier Transform, and it can be implemented in $O(n \log n)$ time using a divide-and-conquer algorithm called the Fast Fourier Transform algorithm. 
-	
 
-	
 	
 	
 	\begin{comment}

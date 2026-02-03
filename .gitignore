@@ -11,4 +11,4 @@ qpe-ds.synctex.gz
 figure-generation/*/*
 !figure-generation/*/*.tex
 !figure-generation/*/*.pdf
-.gitignore
+
